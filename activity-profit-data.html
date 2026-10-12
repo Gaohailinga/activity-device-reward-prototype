@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统一门户系统 - 活动分润数据管理</title>
+  <style>
+    :root { --primary:#0383cd; --primary-light:#1890ff; --bg:#f0f2f5; --card:#fff; --border:#d9d9d9; --text:#333; --text2:#666; --text3:#999; --danger:#ff4d4f; --radius:4px; --cyan:#13c2c2; --cyan-hover:#36cfc9; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; font-size:14px; color:var(--text); background:var(--bg); min-height:100vh; }
+    .icon { width:16px;height:16px;fill:currentColor;vertical-align:middle;margin-right:4px; }
+    .top-bar { height:50px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:fixed;top:0;left:0;right:0;z-index:100; }
+    .top-left { display:flex;align-items:center;gap:12px;flex-shrink:0; }
+    .menu-toggle { background:none;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center; }
+    .menu-toggle .icon { width:20px;height:20px;margin:0; }
+    .portal-title { font-size:16px;font-weight:500; }
+    .env-tag { font-size:12px;color:#fff;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:var(--radius); }
+    .top-nav { display:flex;align-items:center;gap:8px;overflow-x:auto;flex:1;justify-content:center;padding:0 16px; }
+    .top-nav a { color:rgba(255,255,255,0.85);text-decoration:none;padding:0 12px;height:50px;display:flex;align-items:center;white-space:nowrap;font-size:13px; }
+    .top-nav a.active { color:#fff;background:rgba(255,255,255,0.15);font-weight:500; }
+    .nav-right { display:flex;align-items:center;gap:16px;flex-shrink:0; }
+    .nav-right a { color:#fff;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px; }
+    .user-avatar { width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.25);display:inline-flex;align-items:center;justify-content:center;font-size:12px; }
+    .main-layout { display:flex;padding-top:50px;min-height:100vh; }
+    .side-menu { width:200px;background:#fff;border-right:1px solid #e8e8e8;flex-shrink:0; }
+    .menu-label { padding:12px 16px 8px;color:var(--text3);font-size:12px; }
+    .menu-group { border-bottom:1px solid #f0f0f0; }
+    .menu-title { padding:12px 16px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px; }
+    .menu-title .arrow { width:12px;height:12px;color:var(--text3);transition:transform .2s; }
+    .menu-group.open .menu-title .arrow { transform:rotate(90deg); }
+    .sub-menu { display:none;padding-left:16px; }
+    .menu-group.open .sub-menu { display:block; }
+    .sub-menu a { display:block;padding:10px 16px 10px 28px;color:var(--text2);text-decoration:none;font-size:13px;position:relative; }
+    .sub-menu a.active, .sub-menu a:hover { color:var(--primary-light);background:#e6f7ff; }
+    .sub-menu a.active::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary-light); }
+    .main-content { flex:1;min-width:0;display:flex;flex-direction:column; }
+    .tabs-bar { background:#fafafa;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;padding:0 8px;height:40px;flex-shrink:0; }
+    .tab-item { padding:0 16px;height:40px;display:flex;align-items:center;color:var(--text2);font-size:13px;cursor:pointer;border-right:1px solid #f0f0f0;position:relative;white-space:nowrap; }
+    .tab-item.active { color:var(--primary-light);background:#fff;border-bottom:2px solid var(--primary-light); }
+    .tab-item .close { margin-left:8px;color:var(--text3);font-size:12px; }
+    .tab-item .close:hover { color:var(--danger); }
+    .content-area { flex:1;padding:16px;overflow-y:auto; }
+    .section-header { display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;user-select:none; }
+    .section-header .triangle { width:0;height:0;border-left:6px solid var(--text);border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .2s; }
+    .section-header.collapsed .triangle { transform:rotate(-90deg); }
+    .section-title { font-size:14px;font-weight:500;color:var(--text); }
+    .search-area { background:var(--card);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+    .search-row { display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px; }
+    .search-row:last-child { margin-bottom:0; }
+    .search-item { display:flex;align-items:center;gap:8px; }
+    .search-item label { color:var(--text);font-size:14px;white-space:nowrap; }
+    .form-input { height:32px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);outline:none; }
+    .form-input:focus { border-color:var(--primary-light); }
+    .form-input::placeholder { color:#bfbfbf; }
+    .form-input:disabled { background:#f5f5f5;color:var(--text3); }
+    .form-select { height:32px;padding:0 28px 0 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;font-size:14px;color:var(--text);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer; }
+    .form-select:focus { border-color:var(--primary-light);outline:none; }
+    .btn { height:32px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center; }
+    .btn:hover { opacity:.9; }
+    .btn-primary { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .btn-primary:hover { background:#40a9ff;border-color:#40a9ff; }
+    .btn-export { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .btn-create { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .btn-download { background:#fff;color:var(--primary-light);border-color:var(--primary-light); }
+    .btn-download:hover { background:#e6f7ff; }
+    .btn-reset { background:#fff;color:var(--text);border-color:var(--border); }
+    .btn-reset:hover { border-color:var(--primary-light);color:var(--primary-light); }
+    .btn-search { background:var(--cyan);color:#fff;border-color:var(--cyan); }
+    .btn-search:hover { background:var(--cyan-hover);border-color:var(--cyan-hover); }
+    .search-actions { display:flex;gap:8px; }
+    .search-actions-right { margin-left:auto;display:flex;gap:8px; }
+    .result-area { background:var(--card);border-radius:var(--radius);padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+    .data-table { width:100%;border-collapse:collapse;font-size:14px; }
+    .data-table th { background:#fafafa;color:var(--text);font-weight:500;text-align:left;padding:12px 16px;border-bottom:1px solid #f0f0f0;white-space:nowrap; }
+    .data-table td { padding:12px 16px;border-bottom:1px solid #f0f0f0;color:var(--text); }
+    .data-table tbody tr:hover td { background:#e6f7ff; }
+    .data-table .empty { text-align:center;color:var(--text3);padding:40px 0; }
+    .table-actions a { color:var(--primary-light);text-decoration:none;margin-right:10px; }
+    .table-actions a:hover { opacity:.8; }
+    .table-actions a:last-child { margin-right:0; }
+    .pagination { display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:16px; }
+    .pagination .btn { min-width:28px;padding:0 8px;height:28px;font-size:13px; }
+    .pagination .btn.active { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .modal-mask { position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:200; }
+    .modal-mask.show { display:flex; }
+    .modal { background:#fff;border-radius:var(--radius);width:640px;max-width:90%;box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+    .modal-header { display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid #f0f0f0; }
+    .modal-title { font-size:16px;font-weight:500;color:var(--text);margin:0; }
+    .modal-close { background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center; }
+    .modal-close:hover { color:var(--text); }
+    .modal-body { padding:24px; }
+    .modal-footer { padding:10px 24px 24px;display:flex;justify-content:center;gap:12px; }
+    .form-row-modal { display:flex;gap:24px;margin-bottom:16px; }
+    .form-item-modal { display:flex;flex:1;align-items:center;gap:8px;min-width:0; }
+    .form-item-modal.full { width:100%; }
+    .form-item-modal label { width:110px;text-align:right;color:var(--text);font-size:14px;flex-shrink:0;white-space:nowrap; }
+    .form-item-modal .required { color:var(--danger);margin-right:2px; }
+    .form-item-modal .form-input, .form-item-modal .form-select { flex:1;min-width:0; }
+    .form-item-modal textarea.form-input { height:80px;padding:8px 12px;resize:vertical; }
+    .search-select { position:relative;flex:1;min-width:0; }
+    .search-select input { width:100%;padding-right:28px; }
+    .search-select-icon { position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none; }
+    .search-select-dropdown { position:absolute;top:100%;left:0;right:0;margin-top:4px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:none;max-height:220px;overflow-y:auto;z-index:10; }
+    .search-select-dropdown.show { display:block; }
+    .search-select-option { padding:8px 12px;cursor:pointer;font-size:14px;color:var(--text); }
+    .search-select-option:hover, .search-select-option.selected { background:#e6f7ff; }
+    .toast { position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:14px;z-index:1000;display:none; }
+    .date-field { position:relative; }
+    .date-field .form-input { width:130px;padding-right:28px; }
+    .date-field .calendar-icon { position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;width:14px;height:14px;margin:0; }
+    .status-enable { color:#52c41a; }
+    .status-disable { color:#ff4d4f; }
+    .status-yes { color:#52c41a; }
+    .status-no { color:#ff4d4f; }
+    .text-right { text-align:right; }
+    .table-scroll { overflow-x:auto; }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;visibility:hidden">
+    <defs>
+      <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-back" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-org" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+      <symbol id="icon-risk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 8v5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></symbol>
+      <symbol id="icon-money" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="currentColor">¥</text></symbol>
+      <symbol id="icon-trans" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h12" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-device" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M10 18h4" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="icon-profit" viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-product" viewBox="0 0 24 24"><path d="M5 5l7-3 7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V5z" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-exit" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-arrow-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+    </defs>
+  </svg>
+  <header class="top-bar">
+    <div class="top-left">
+      <button class="menu-toggle"><svg class="icon"><use href="#icon-menu"/></svg></button>
+      <span class="back-arrow"><svg class="icon"><use href="#icon-back"/></svg></span>
+      <span class="portal-title">统一门户系统</span>
+      <span class="env-tag">当前内网</span>
+    </div>
+    <nav class="top-nav">
+      <a href="#"><svg class="icon"><use href="#icon-user"/></svg>用户管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-org"/></svg>机构管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-risk"/></svg>风控系统</a>
+      <a href="#"><svg class="icon"><use href="#icon-money"/></svg>资金管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-trans"/></svg>交易管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-device"/></svg>机具管理</a>
+      <a href="#">银行合作</a>
+      <a href="#" class="active"><svg class="icon"><use href="#icon-profit"/></svg>分润管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-product"/></svg>产品管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-file"/></svg>档案系统</a>
+      <a href="#">更多</a>
+    </nav>
+    <div class="nav-right">
+      <a href="#"><svg class="icon"><use href="#icon-refresh"/></svg>刷新</a>
+      <a href="#"><span class="user-avatar">P</span>P500009</a>
+      <a href="#"><svg class="icon"><use href="#icon-exit"/></svg>退出</a>
+    </div>
+  </header>
+  <div class="main-layout">
+    <aside class="side-menu">
+      <div class="menu-label">常用菜单</div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>月分润管理</div></div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>日分润管理</div></div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>数据管理</div></div>
+      <div class="menu-group open">
+        <div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>营销活动分润管理</div>
+        <div class="sub-menu">
+          <a href="rule-management.html">活动分润规则管理</a>
+          <a href="rule-condition-lib.html">配置规则条件库</a>
+          <a href="activity-profit-data.html" class="active">活动分润数据管理</a>
+          <a href="#">风险商户维护</a>
+        </div>
+      </div>
+    </aside>
+    <main class="main-content">
+      <div class="tabs-bar">
+        <div class="tab-item">首页</div>
+        <div class="tab-item">月分润外表管理</div>
+        <div class="tab-item">配置规则条件库</div>
+        <div class="tab-item">活动分润规则管理</div>
+        <div class="tab-item active">活动分润数据管理<span class="close">×</span></div>
+      </div>
+      <div class="content-area">
+        <div class="search-area">
+          <div class="section-header" id="searchHeader">
+            <span class="triangle"></span>
+            <span class="section-title">查询条件</span>
+          </div>
+          <div id="searchBody">
+            <div class="search-row">
+              <div class="search-item">
+                <label>活动名称：</label>
+                <select class="form-select" id="filterActivity" style="width:180px;">
+                  <option value="">请选择</option>
+                  <option value="验证机具活动2">验证机具活动2</option>
+                  <option value="12030005风险商户">12030005风险商户</option>
+                  <option value="120300211月跑批机具A8+T9">120300211月跑批机具A8+T9</option>
+                  <option value="1126002活动机具规则条件">1126002活动机具规则条件</option>
+                  <option value="1125003商户开户+笔数">1125003商户开户+笔数</option>
+                </select>
+              </div>
+              <div class="search-item">
+                <label>分润规则：</label>
+                <select class="form-select" id="filterRule" style="width:180px;">
+                  <option value="">请选择</option>
+                  <option value="规则集1">规则集1</option>
+                </select>
+              </div>
+              <div class="search-item">
+                <label>活动状态：</label>
+                <select class="form-select" id="filterStatus" style="width:160px;">
+                  <option value="" selected>全部</option>
+                  <option value="启用">启用</option>
+                  <option value="停用">停用</option>
+                </select>
+              </div>
+            </div>
+            <div class="search-row">
+              <div class="search-item">
+                <label>机构：</label>
+                <select class="form-select" id="filterOrg" style="width:180px;">
+                  <option value="">请选择</option>
+                  <option value="10782853">10782853</option>
+                  <option value="04253781">04253781</option>
+                  <option value="12782095">12782095</option>
+                  <option value="19599844">19599844</option>
+                  <option value="26680846">26680846</option>
+                </select>
+              </div>
+              <div class="search-item">
+                <label>分润月份：</label>
+                <div class="date-range">
+                  <div class="date-field">
+                    <input type="text" class="form-input" id="filterMonthStart" placeholder="开始月份">
+                    <svg class="icon calendar-icon"><use href="#icon-calendar"/></svg>
+                  </div>
+                  <span>~</span>
+                  <div class="date-field">
+                    <input type="text" class="form-input" id="filterMonthEnd" placeholder="结束月份">
+                    <svg class="icon calendar-icon"><use href="#icon-calendar"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="search-row">
+              <div class="search-actions">
+                <button class="btn btn-primary" id="btnDetailExport">明细导出</button>
+                <button class="btn btn-primary" id="btnExport">导出</button>
+                <button class="btn btn-primary" id="btnNewBatch">新建跑批</button>
+                <button class="btn btn-primary" id="btnBatchRecord">跑批记录</button>
+              </div>
+              <div class="search-actions-right">
+                <button class="btn btn-reset" id="btnReset">重置</button>
+                <button class="btn btn-search" id="btnSearch">查询</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="result-area">
+          <div class="section-header" id="resultHeader">
+            <span class="triangle"></span>
+            <span class="section-title">查询结果</span>
+          </div>
+          <div id="resultBody">
+            <div class="table-scroll">
+              <table class="data-table" id="profitTable">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>活动名称</th>
+                    <th>分润规则</th>
+                    <th>活动状态</th>
+                    <th>机构号</th>
+                    <th>分润月份</th>
+                    <th>奖励规则条件</th>
+                    <th>奖励条件是否达标</th>
+                    <th class="text-right">应奖励金额/元</th>
+                    <th class="text-right">奖励发放金额/元（按月顺延）</th>
+                  </tr>
+                </thead>
+                <tbody id="profitTableBody">
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="pagination">
+              <button class="btn">上一页</button>
+              <button class="btn active">1</button>
+              <button class="btn">2</button>
+              <button class="btn">3</button>
+              <button class="btn">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script>
+    const $ = id => document.getElementById(id);
+    const toast = msg => { const t=$('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); };
+
+    // 折叠查询条件
+    $('searchHeader').addEventListener('click', ()=>{
+      $('searchHeader').classList.toggle('collapsed');
+      $('searchBody').style.display = $('searchHeader').classList.contains('collapsed') ? 'none' : 'block';
+    });
+
+    // 折叠查询结果
+    $('resultHeader').addEventListener('click', ()=>{
+      $('resultHeader').classList.toggle('collapsed');
+      $('resultBody').style.display = $('resultHeader').classList.contains('collapsed') ? 'none' : 'block';
+    });
+
+    // 表格数据
+    const tableData = [
+      {no:1, name:'验证机具活动2', rule:'规则集1', status:'启用', org:'10782853', month:'2026-01', condition:'月交易金额', thresholdValue:'999.99', reached:true, rewardAmount:0.40, paidAmount:0.40},
+      {no:2, name:'12030005风险商户', rule:'规则集1', status:'启用', org:'04253781', month:'2025-11', condition:'二维码月交易总笔数大于等于1', thresholdValue:'0', reached:false, rewardAmount:null, paidAmount:null},
+      {no:3, name:'12030005风险商户', rule:'规则集1', status:'启用', org:'10782853', month:'2025-11', condition:'二维码月交易总笔数大于等于1', thresholdValue:'0', reached:false, rewardAmount:null, paidAmount:null},
+      {no:4, name:'120300211月跑批机具A8+T9', rule:'规则集1', status:'启用', org:'10782853', month:'2025-11', condition:'机具月交易金额0-10000', thresholdValue:'490.00', reached:true, rewardAmount:0.69, paidAmount:0.69},
+      {no:5, name:'1126002活动机具规则条件', rule:'规则集1', status:'停用', org:'10782853', month:'2025-10', condition:'机具月交易金额0-10000', thresholdValue:'450.00', reached:true, rewardAmount:23.68, paidAmount:23.68},
+      {no:6, name:'1126002活动机具规则条件', rule:'规则集1', status:'停用', org:'12782095', month:'2025-10', condition:'机具月交易金额0-10000', thresholdValue:'290.00', reached:true, rewardAmount:11.52, paidAmount:11.52},
+      {no:7, name:'1125003商户开户+笔数', rule:'规则集1', status:'停用', org:'19599844', month:'2025-10', condition:'二维码月交易总笔数大于等于1', thresholdValue:'10', reached:true, rewardAmount:48.00, paidAmount:48.00},
+      {no:8, name:'1125003商户开户+笔数', rule:'规则集1', status:'停用', org:'26680846', month:'2025-10', condition:'二维码月交易总笔数大于等于1', thresholdValue:'0', reached:false, rewardAmount:48.00, paidAmount:48.00}
+    ];
+
+    const renderTable = data => {
+      const tbody = $('profitTableBody');
+      if(!data.length){
+        tbody.innerHTML = '<tr><td colspan="10" class="empty">暂无数据</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(row => `
+        <tr>
+          <td>${row.no}</td>
+          <td>${row.name}</td>
+          <td>${row.rule}</td>
+          <td><span class="${row.status==='启用'?'status-enable':'status-disable'}">${row.status}</span></td>
+          <td>${row.org}</td>
+          <td>${row.month}</td>
+          <td>${row.condition}</td>
+          <td>${row.thresholdValue},<span class="${row.reached?'status-yes':'status-no'}">${row.reached?'是':'否'}</span></td>
+          <td class="text-right">${row.rewardAmount!=null?row.rewardAmount.toFixed(2):'-'}</td>
+          <td class="text-right">${row.paidAmount!=null?row.paidAmount.toFixed(2):'-'}</td>
+        </tr>
+      `).join('');
+    };
+
+    renderTable(tableData);
+
+    // 查询
+    $('btnSearch').addEventListener('click', ()=>{
+      const activity = $('filterActivity').value;
+      const rule = $('filterRule').value;
+      const status = $('filterStatus').value;
+      const org = $('filterOrg').value;
+      const start = $('filterMonthStart').value.trim();
+      const end = $('filterMonthEnd').value.trim();
+      const filtered = tableData.filter(row => {
+        const monthMatch = (!start || row.month >= start) && (!end || row.month <= end);
+        return (!activity || row.name === activity) &&
+               (!rule || row.rule === rule) &&
+               (!status || row.status === status) &&
+               (!org || row.org === org) &&
+               monthMatch;
+      });
+      renderTable(filtered);
+      toast('查询完成');
+    });
+
+    // 重置
+    $('btnReset').addEventListener('click', ()=>{
+      $('filterActivity').value = '';
+      $('filterRule').value = '';
+      $('filterStatus').value = '';
+      $('filterOrg').value = '';
+      $('filterMonthStart').value = '';
+      $('filterMonthEnd').value = '';
+      renderTable(tableData);
+      toast('已重置');
+    });
+
+    // 导出及跑批
+    $('btnDetailExport').addEventListener('click', ()=> toast('明细导出成功'));
+    $('btnExport').addEventListener('click', ()=> toast('导出成功'));
+    $('btnNewBatch').addEventListener('click', ()=> toast('新建跑批成功'));
+    $('btnBatchRecord').addEventListener('click', ()=> toast('跑批记录'));
+  </script>
+</body>
+</html>

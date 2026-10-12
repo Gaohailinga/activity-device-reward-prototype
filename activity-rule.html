@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统一门户系统 - 活动分润规则管理</title>
+  <style>
+    .page.hidden { display:none; }
+    :root { --primary:#0383cd; --primary-light:#1890ff; --bg:#f0f2f5; --card:#fff; --border:#d9d9d9; --text:#333; --text2:#666; --text3:#999; --danger:#ff4d4f; --success:#52c41a; --radius:4px; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; font-size:14px; color:var(--text); background:var(--bg); min-height:100vh; }
+    .icon { width:16px;height:16px;fill:currentColor;vertical-align:middle;margin-right:4px; }
+    .top-bar { height:50px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:fixed;top:0;left:0;right:0;z-index:100; }
+    .top-left { display:flex;align-items:center;gap:12px;flex-shrink:0; }
+    .menu-toggle { background:none;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center; }
+    .menu-toggle .icon, .back-arrow .icon { width:20px;height:20px;margin:0; }
+    .back-arrow { display:flex;align-items:center;cursor:pointer; }
+    .portal-title { font-size:16px;font-weight:500; }
+    .env-tag { font-size:12px;color:#fff;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:var(--radius); }
+    .top-nav { display:flex;align-items:center;gap:8px;overflow-x:auto;flex:1;justify-content:center;padding:0 16px; }
+    .top-nav a { color:rgba(255,255,255,0.85);text-decoration:none;padding:0 12px;height:50px;display:flex;align-items:center;white-space:nowrap;font-size:13px; }
+    .top-nav a.active { color:#fff;background:rgba(255,255,255,0.15);font-weight:500; }
+    .nav-right { display:flex;align-items:center;gap:16px;flex-shrink:0; }
+    .nav-right a { color:#fff;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px; }
+    .user-avatar { width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.25);display:inline-flex;align-items:center;justify-content:center;font-size:12px; }
+    .main-layout { display:flex;padding-top:50px;min-height:100vh; }
+    .side-menu { width:200px;background:#fff;border-right:1px solid #e8e8e8;flex-shrink:0; }
+    .menu-label { padding:12px 16px 8px;color:var(--text3);font-size:12px; }
+    .menu-group { border-bottom:1px solid #f0f0f0; }
+    .menu-title { padding:12px 16px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px; }
+    .menu-title .arrow { width:12px;height:12px;color:var(--text3);transition:transform .2s; }
+    .menu-group.open .menu-title .arrow { transform:rotate(90deg); }
+    .sub-menu { display:none;padding-left:16px; }
+    .menu-group.open .sub-menu { display:block; }
+    .sub-menu a { display:block;padding:10px 16px 10px 28px;color:var(--text2);text-decoration:none;font-size:13px;position:relative; }
+    .sub-menu a.active, .sub-menu a:hover { color:var(--primary-light);background:#e6f7ff; }
+    .sub-menu a.active::before { content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary-light); }
+    .main-content { flex:1;min-width:0;display:flex;flex-direction:column; }
+    .tabs-bar { background:#fafafa;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;padding:0 8px;height:40px;flex-shrink:0; }
+    .tab-item { padding:0 16px;height:40px;display:flex;align-items:center;color:var(--text2);font-size:13px;cursor:pointer;border-right:1px solid #f0f0f0;position:relative;white-space:nowrap; }
+    .tab-item.active { color:var(--primary-light);background:#fff;border-bottom:2px solid var(--primary-light); }
+    .tab-item .close { margin-left:8px;color:var(--text3);font-size:12px; }
+    .tab-item .close:hover { color:var(--danger); }
+    .content-area { flex:1;padding:16px;overflow-y:auto; }
+    .breadcrumb { color:var(--text2);font-size:13px;margin-bottom:12px; }
+    .page-title { font-size:16px;font-weight:500;margin:0 0 16px; }
+    .search-card { background:var(--card);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+    .search-row { display:flex;align-items:center;gap:16px;flex-wrap:wrap; }
+    .search-item { display:flex;align-items:center;gap:8px; }
+    .search-item label { color:var(--text2);font-size:14px; }
+    .form-input { height:32px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);outline:none; }
+    .form-input:focus { border-color:var(--primary-light); }
+    .form-input::placeholder { color:#bfbfbf; }
+    .form-select { height:32px;padding:0 28px 0 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;font-size:14px;color:var(--text);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:120px;cursor:pointer; }
+    .form-select:focus { border-color:var(--primary-light);outline:none; }
+    .btn { height:32px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center; }
+    .btn:hover { border-color:var(--primary-light);color:var(--primary-light); }
+    .btn-primary { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .btn-primary:hover { background:#40a9ff;border-color:#40a9ff;color:#fff; }
+    .btn-warning { background:#fa8c16;color:#fff;border-color:#fa8c16; }
+    .btn-warning:hover { background:#ffa940;border-color:#ffa940;color:#fff; }
+    .btn+.btn { margin-left:8px; }
+    .toolbar { display:flex;justify-content:space-between;align-items:center;margin-bottom:12px; }
+    .toolbar-left { display:flex;gap:8px; }
+    .table-card { background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+    .data-table { width:100%;border-collapse:collapse;font-size:13px; }
+    .data-table th, .data-table td { padding:12px 16px;text-align:left;border-bottom:1px solid #f0f0f0; }
+    .data-table th { background:#fafafa;color:var(--text2);font-weight:500; }
+    .data-table tr:hover { background:#fafafa; }
+    .data-table .ops a { color:var(--primary-light);text-decoration:none;margin-right:12px; }
+    .data-table .ops a:hover { opacity:.85; }
+    .status-tag { display:inline-block;padding:2px 8px;border-radius:var(--radius);font-size:12px; }
+    .status-tag.success { background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f; }
+    .status-tag.draft { background:#f5f5f5;color:var(--text2);border:1px solid #d9d9d9; }
+    .status-tag.danger { background:#fff1f0;color:#f5222d;border:1px solid #ffa39e; }
+    .pagination { display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:16px; }
+    .page-btn { min-width:28px;height:28px;border:1px solid var(--border);background:#fff;border-radius:var(--radius);cursor:pointer;color:var(--text2); }
+    .page-btn.active { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+    .page-btn:disabled { cursor:not-allowed;background:#f5f5f5; }
+    .toast { position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:14px;z-index:1000;display:none; }
+.form-section { background:var(--card);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.section-header { display:flex;align-items:center;gap:8px;margin-bottom:20px;cursor:pointer; }
+.section-header .triangle { width:0;height:0;border-left:6px solid var(--text);border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .2s; }
+.section-header.collapsed .triangle { transform:rotate(-90deg); }
+.section-title { font-size:15px;font-weight:500;color:var(--text); }
+.form-row { display:flex;gap:40px;margin-bottom:16px;flex-wrap:wrap; }
+.form-item { display:flex;align-items:center;gap:10px; }
+.form-item.col { flex:1;min-width:280px; }
+.form-item label { color:var(--text);font-size:14px;white-space:nowrap; }
+.form-item .required { color:var(--danger);margin-right:2px; }
+.form-input { height:32px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);outline:none; }
+.form-input:focus { border-color:var(--primary-light); }
+.form-input::placeholder { color:#bfbfbf; }
+.form-input:disabled { background:#f5f5f5; }
+.form-select { height:32px;padding:0 28px 0 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;font-size:14px;color:var(--text);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer; }
+.form-select:focus { border-color:var(--primary-light);outline:none; }
+.date-range { display:flex;align-items:center;gap:8px; }
+.date-range .form-input { width:130px; }
+.switch { position:relative;display:inline-block;width:40px;height:20px; }
+.switch input { opacity:0;width:0;height:0; }
+.slider { position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#bfbfbf;transition:.2s;border-radius:20px; }
+.slider:before { position:absolute;content:'';height:16px;width:16px;left:2px;bottom:2px;background:#fff;transition:.2s;border-radius:50%; }
+input:checked + .slider { background:var(--primary-light); }
+input:checked + .slider:before { transform:translateX(20px); }
+.switch-label { color:var(--primary-light);font-size:14px;margin-left:8px; }
+.btn { height:32px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center; }
+.btn:hover { border-color:var(--primary-light);color:var(--primary-light); }
+.btn-primary { background:var(--primary-light);color:#fff;border-color:var(--primary-light); }
+.btn-primary:hover { background:#40a9ff;border-color:#40a9ff;color:#fff; }
+.btn-sm { height:28px;padding:0 12px;font-size:13px; }
+.btn-icon { width:32px;height:32px;padding:0;justify-content:center; }
+.btn-icon .icon { margin:0; }
+.link { color:var(--primary-light);text-decoration:none;font-size:14px; }
+.link:hover { opacity:.85; }
+.rule-block { background:#fafafa;border:1px solid #f0f0f0;border-radius:var(--radius); }
+.rule-block-header { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer; }
+.rule-block-header .left { display:flex;align-items:center;gap:8px; }
+.rule-block-header .arrow { width:12px;height:12px;color:var(--text3);transition:transform .2s; }
+.rule-block.collapsed .arrow { transform:rotate(-90deg); }
+.rule-block-body { padding:20px 24px;background:#fafafa; }
+.rule-block.collapsed .rule-block-body { display:none; }
+.nested-form-item { display:flex;align-items:flex-start;margin-bottom:18px; }
+.nested-form-item:last-child { margin-bottom:0; }
+.nested-label { width:160px;text-align:right;padding-right:12px;padding-top:6px;color:var(--text);font-size:14px;flex-shrink:0; }
+.nested-label .required { color:var(--danger);margin-right:4px; }
+.nested-control { flex:1;min-width:0; }
+.rule-type-select { border:none;background-color:transparent;padding:0 18px 0 0;border-radius:0;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0 center;color:var(--text);font-size:14px;height:auto;line-height:inherit;cursor:pointer;outline:none;vertical-align:middle; }
+.rule-type-select option { color:var(--text);background:#fff; }
+.upload-zone { border:1px dashed var(--border);border-radius:var(--radius);min-height:60px;padding:12px;background:#fff;display:flex;flex-direction:column;gap:8px; }
+.upload-tip { color:var(--text3);font-size:13px;margin:0; }
+.file-list { display:flex;flex-wrap:wrap;gap:8px; }
+.file-tag { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#f0f5ff;color:var(--primary-light);border:1px solid #d6e4ff;border-radius:var(--radius);font-size:13px; }
+.file-tag .del { cursor:pointer;color:var(--text3); }
+.section-subtitle { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px; }
+.section-subtitle h4 { margin:0;font-size:14px;font-weight:500;color:var(--text); }
+.rule-type-group { display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
+.rule-type-btn { padding:6px 16px;background:#fff;border:none;border-right:1px solid var(--border);cursor:pointer;font-size:14px;color:var(--text); }
+.rule-type-btn:last-child { border-right:none; }
+.rule-type-btn:hover { color:var(--primary-light); }
+.rule-type-btn.active { background:var(--primary-light);color:#fff; }
+.rule-title-line { display:flex;align-items:center;margin-bottom:12px;color:var(--text);font-weight:500; }
+.rule-title-line::after { content:'';flex:1;height:1px;background:#e8e8e8;margin-left:12px; }
+.radio-group { display:flex;flex-direction:column;gap:10px; }
+.radio { display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:14px; }
+.radio-desc { color:var(--text3);font-size:12px;margin:4px 0 0 22px; }
+.reward-standard-box { border:1px dashed var(--border);border-radius:var(--radius);padding:16px;background:#fff;display:inline-block;min-width:420px; }
+.merchant-rule-box { border:1px solid var(--border);border-radius:var(--radius);padding:16px;background:#fff; }
+.step-row { display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap; }
+.step-row .btn-icon { width:28px;height:28px; }
+.ratio-inputs { margin:10px 0 0 22px;display:flex;flex-direction:column;gap:10px; }
+.ratio-row { display:flex;align-items:center;gap:8px; }
+.dashed-box { border:1px dashed var(--border);border-radius:var(--radius);padding:16px;background:#fff;display:inline-block;min-width:420px; }
+.radio-label { display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px; }
+.radio-label input { margin:0; }
+.radio-main { display:flex;align-items:center;gap:8px; }
+.radio-desc { color:var(--text2);font-size:13px;margin-left:22px;margin-top:4px; }
+.reward-mode-group { display:flex;flex-direction:column;gap:12px; }
+.ladder-row { display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap; }
+.ladder-row .btn-icon { width:28px;height:28px; }
+.ladder-row .form-input { width:90px; }
+.ladder-label { color:var(--text2);font-size:13px;white-space:nowrap; }
+.inline-hint { color:var(--primary-light);font-size:13px;margin-left:8px; }
+.form-actions { display:flex;justify-content:center;gap:12px;margin-top:24px; }
+.form-actions .btn { min-width:88px; }
+.toast { position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:14px;z-index:1000;display:none; }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;visibility:hidden">
+    <defs>
+      <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-back" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-org" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></symbol>
+      <symbol id="icon-risk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 8v5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="currentColor"/></symbol>
+      <symbol id="icon-money" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="currentColor">¥</text></symbol>
+      <symbol id="icon-trans" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h12" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-device" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M10 18h4" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="icon-profit" viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-product" viewBox="0 0 24 24"><path d="M5 5l7-3 7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V5z" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-exit" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-tag" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="top-bar">
+    <div class="top-left">
+      <button class="menu-toggle"><svg class="icon"><use href="#icon-menu"/></svg></button>
+      <span class="back-arrow"><svg class="icon"><use href="#icon-back"/></svg></span>
+      <span class="portal-title">统一门户系统</span>
+      <span class="env-tag">当前内网</span>
+    </div>
+    <nav class="top-nav">
+      <a href="#"><svg class="icon"><use href="#icon-user"/></svg>用户管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-org"/></svg>机构管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-risk"/></svg>风控系统</a>
+      <a href="#"><svg class="icon"><use href="#icon-money"/></svg>资金管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-trans"/></svg>交易管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-device"/></svg>机具管理</a>
+      <a href="#">银行合作</a>
+      <a href="#" class="active"><svg class="icon"><use href="#icon-profit"/></svg>分润管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-product"/></svg>产品管理</a>
+      <a href="#"><svg class="icon"><use href="#icon-file"/></svg>档案系统</a>
+      <a href="#">更多</a>
+    </nav>
+    <div class="nav-right">
+      <a href="#"><svg class="icon"><use href="#icon-refresh"/></svg>刷新</a>
+      <a href="#"><span class="user-avatar">P</span>P500009</a>
+      <a href="#"><svg class="icon"><use href="#icon-exit"/></svg>退出</a>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <aside class="side-menu">
+      <div class="menu-label">常用菜单</div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>月分润管理</div></div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>日分润管理</div></div>
+      <div class="menu-group"><div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>数据管理</div></div>
+      <div class="menu-group open">
+        <div class="menu-title"><svg class="icon arrow"><use href="#icon-arrow-right"/></svg>营销活动分润管理</div>
+        <div class="sub-menu">
+          <a href="rule-management.html" class="active">活动分润规则管理</a>
+          <a href="rule-condition-lib.html">配置规则条件库</a>
+          <a href="activity-profit-data.html">活动分润数据管理</a>
+          <a href="#">风险商户维护</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="tabs-bar">
+        <div class="tab-item">首页</div>
+        <div class="tab-item">月分润外表管理</div>
+        <div class="tab-item">查看导出文件</div>
+        <div class="tab-item">跑批管理</div>
+        <div class="tab-item">报表管理</div>
+        <div class="tab-item">活动数据管理</div>
+        <div class="tab-item active">活动分润规则管理<span class="close">×</span></div>
+        <div class="tab-item">配置规则条件库</div>
+        <div class="tab-item">活动分润数据管理</div>
+      </div>
+
+      <div class="content-area page" id="page-list">
+        
+        <div class="breadcrumb">统一门户系统 > 分润管理 > 活动分润规则管理</div>
+        <h2 class="page-title">活动分润规则管理</h2>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="btn btn-primary" id="btnCreateRule">创建活动分润规则</button>
+            </div>
+        </div>
+
+        <div class="search-card">
+          <div class="search-row">
+            <div class="search-item">
+              <label>活动名称</label>
+              <input type="text" class="form-input" placeholder="请输入" style="width:180px;">
+            </div>
+            <div class="search-item">
+              <label>活动类型</label>
+              <select class="form-select">
+                <option>全部</option>
+                <option>普通活动</option>
+                <option>设备分润规则</option>
+              </select>
+            </div>
+            <div class="search-item">
+              <label>活动状态</label>
+              <select class="form-select">
+                <option>全部</option>
+                <option>生效中</option>
+                <option>已失效</option>
+              </select>
+            </div>
+            <div class="search-item" style="margin-left:auto;">
+              <button class="btn">重置</button>
+              <button class="btn btn-primary">查询</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>活动名称</th>
+                <th>活动类型</th>
+                <th>活动时间</th>
+                <th>活动状态</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>2024年Q4云音箱设备奖励活动</td>
+                <td>设备分润规则</td>
+                <td>2024-10-01 ~ 2025-09-30</td>
+                <td><span class="status-tag success">生效中</span></td>
+                <td>2024-09-28 14:30:00</td>
+                <td class="ops"><a href="#">查看详情</a><a href="#">停用</a><a href="#">删除</a></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>2024年中秋商户奖励活动</td>
+                <td>普通活动</td>
+                <td>2024-09-01 ~ 2024-09-30</td>
+                <td><span class="status-tag draft">草稿</span></td>
+                <td>2024-08-20 09:15:00</td>
+                <td class="ops"><a href="#">查看详情</a><a href="#">编辑</a><a href="#">删除</a></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>2026年机具奖励规则</td>
+                <td>设备分润规则</td>
+                <td>2026-01-01 ~ 2026-12-31</td>
+                <td><span class="status-tag success">生效中</span></td>
+                <td>2026-01-05 10:00:00</td>
+                <td class="ops"><a href="#">查看详情</a><a href="#">停用</a><a href="#">删除</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <span style="color:var(--text2);font-size:13px;">共 3 条</span>
+            <button class="page-btn" disabled><</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn" disabled>></button>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="content-area page hidden" id="page-create">
+        <!-- 创建活动分润规则 -->
+        <div class="form-section">
+          <div class="section-header" id="basicHeader">
+            <span class="triangle"></span>
+            <span class="section-title">创建活动分润规则</span>
+          </div>
+          <div class="section-body" id="basicBody">
+            <div class="form-row">
+              <div class="form-item col">
+                <label><span class="required">*</span>活动名称：</label>
+                <input type="text" class="form-input" placeholder="请输入" style="width:240px;">
+              </div>
+              <div class="form-item col">
+                <label><span class="required">*</span>活动状态：</label>
+                <label class="switch"><input type="checkbox" checked id="activitySwitch"><span class="slider"></span></label>
+                <span class="switch-label" id="switchLabel">启用</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-item col">
+                <label><span class="required">*</span>活动时间：</label>
+                <div class="date-range">
+                  <input type="text" class="form-input" placeholder="开始日期">
+                  <span>~</span>
+                  <input type="text" class="form-input" placeholder="结束日期">
+                </div>
+              </div>
+              <div class="form-item col">
+                <label>匹配外表活动：</label>
+                <select class="form-select" style="width:240px;">
+                  <option value="">请选择匹配外表活动</option>
+                  <option value="1">2024年Q4云音箱活动</option>
+                  <option value="2">2026年机具奖励活动</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分润规则设置 -->
+        <div class="form-section">
+          <div class="section-subtitle">
+            <h4>分润规则设置</h4>
+            <a href="#" class="link" id="addRuleSet">+新增规则集</a>
+          </div>
+
+          <div class="rule-block" id="ruleSet1">
+            <div class="rule-block-header" data-target="ruleSet1Body">
+              <div class="left">
+                <svg class="icon arrow"><use href="#icon-arrow-down"/></svg>
+                <span>规则集1</span>
+              </div>
+            </div>
+            <div class="rule-block-body" id="ruleSet1Body">
+              <div class="nested-form-item">
+                <label class="nested-label"><span class="required">*</span>规则集名称：</label>
+                <div class="nested-control">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="text" class="form-input" id="ruleSetName" value="规则集1" style="width:220px;">
+                    <button class="btn btn-sm" id="btnRename">重命名</button>
+                    <button class="btn btn-sm" id="btnDelete">删除</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nested-form-item">
+                <label class="nested-label">应用时间：</label>
+                <div class="nested-control">
+                  <div class="date-range">
+                    <input type="text" class="form-input" placeholder="开始日期">
+                    <span>~</span>
+                    <input type="text" class="form-input" placeholder="结束日期">
+                  </div>
+                </div>
+              </div>
+
+              <div class="nested-form-item">
+                <label class="nested-label"><span class="required">*</span>参与机构：</label>
+                <div class="nested-control">
+                  <button class="btn btn-sm" id="btnImportOrg"><svg class="icon"><use href="#icon-file"/></svg>导入</button>
+                  <a href="#" class="link" style="margin-left:12px;">下载模板</a>
+                  <div class="upload-zone" style="margin-top:10px;">
+                    <p class="upload-tip">暂无导入机构数据，请先下载模板并按模板格式填写后导入。</p>
+                    <div class="file-list" id="orgFileList"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nested-form-item">
+                <div class="nested-label">
+                  <span class="required">*</span>
+                  <select class="rule-type-select" id="ruleTypeSelect">
+                    <option value="device">机具规则奖励</option>
+                    <option value="merchant">商户规则条件</option>
+                    <option value="2026-device">26年设备规则奖励</option>
+                  </select>
+                </div>
+                <div class="nested-control">
+                  <select class="form-select" id="ruleConditionLib" style="width:260px;">
+                    <option value="">请选择对应规则</option>
+                    <option value="d1">2024年Q4云音箱活动规则</option>
+                    <option value="d2">传统POS激活奖励规则</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="normalRuleFields" style="display:none;">
+                <div class="nested-form-item">
+                  <label class="nested-label"><span class="required">*</span>奖励规则条件：</label>
+                  <div class="nested-control">
+                    <select class="form-select" id="selectRuleCondition" style="width:160px;">
+                      <option value="">请选择</option>
+                      <option value="count" selected>按笔数奖励</option>
+                      <option value="amount">按金额奖励</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="nested-form-item">
+                  <label class="nested-label"><span class="required">*</span>奖励标准：</label>
+                  <div class="nested-control">
+                    <div class="upload-zone" style="min-height:120px;">
+                      <p class="upload-tip">请配置奖励标准</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="device2026Fields" style="display:none;">
+                <div class="nested-form-item">
+                  <label class="nested-label"><span class="required">*</span>基于奖励条件：</label>
+                  <div class="nested-control">
+                    <select class="form-select" id="selectRuleCondition2026" style="width:220px;">
+                      <option value="">请选择</option>
+                    </select>
+                    <span class="inline-hint">仅支持按笔数奖励</span>
+                  </div>
+                </div>
+
+                <div class="nested-form-item">
+                  <label class="nested-label"><span class="required">*</span>奖励目标：</label>
+                  <div class="nested-control">
+                    <input type="text" class="form-input" value="交易笔数" disabled style="width:100px;background:#f5f5f5;">
+                    <span class="inline-hint">按笔数奖励时固定为交易笔数</span>
+                  </div>
+                </div>
+
+                <div class="nested-form-item">
+                  <label class="nested-label"></label>
+                  <div class="nested-control">
+                    <div class="reward-mode-group">
+                      <label class="radio-label">
+                        <input type="radio" name="rewardMode" value="ladder" checked>
+                        <span class="radio-main">阶梯奖励</span>
+                      </label>
+                      <p class="radio-desc">按阶梯配置进行奖励，奖励金额=奖励目标*区间奖励标准*区间奖励系数</p>
+
+                      <div class="nested-form-item" style="margin:8px 0 0 22px;">
+                        <label class="nested-label" style="width:auto;padding-right:8px;"><span class="required">*</span>阶梯区间奖励标准：</label>
+                        <div class="nested-control">
+                          <div id="ladderRows">
+                            <div class="ladder-row">
+                              <button class="btn btn-icon btn-sm ladder-add" type="button"><svg class="icon"><use href="#icon-plus"/></svg></button>
+                              <input type="text" class="form-input" placeholder="请输入">
+                              <span class="ladder-label">≤机具月（卡+码）交易笔数&lt;</span>
+                              <input type="text" class="form-input" placeholder="请输入">
+                              <span class="ladder-label">奖励标准：机具类型</span>
+                              <input type="text" class="form-input" placeholder="请输入">
+                              <span class="ladder-label">台/目标单位</span>
+                              <span class="ladder-label">奖励系数：</span>
+                              <input type="text" class="form-input" placeholder="请输入">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="nested-form-item">
+                  <label class="nested-label"><span class="required">*</span>设备SN导入：</label>
+                  <div class="nested-control">
+                    <button class="btn btn-sm" id="btnImportSn"><svg class="icon"><use href="#icon-file"/></svg>导入</button>
+                    <a href="#" class="link" style="margin-left:12px;">下载模板</a>
+                    <div class="upload-zone" style="margin-top:10px;">
+                      <p class="upload-tip">暂无导入设备数据，请先下载模板并按模板格式填写后导入。</p>
+                      <div class="file-list" id="snFileList"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" id="btnCancel">取消</button>
+          <button class="btn btn-primary" id="btnSave">保存</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+const $ = id => document.getElementById(id);
+const toast = msg => { const t=$('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); };
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
+
+// 创建活动分润规则：切换页面
+$('btnCreateRule').addEventListener('click', ()=>{ showPage('page-create'); });
+
+// 列表页：查询/重置
+const searchInputs = document.querySelectorAll('#page-list .search-card input, #page-list .search-card select');
+document.querySelector('#page-list .search-card .btn').addEventListener('click', ()=>{
+  searchInputs.forEach(i=>{ i.value=''; if(i.tagName==='SELECT') i.selectedIndex=0; });
+  toast('已重置');
+});
+document.querySelector('#page-list .search-card .btn-primary').addEventListener('click', ()=>{ toast('查询'); });
+
+// 列表页：表格操作
+document.querySelectorAll('#page-list .data-table .ops a').forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    const action = a.textContent.trim();
+    const name = a.closest('tr').querySelector('td:nth-child(2)').textContent;
+    if(action==='删除'){ if(confirm(`确认删除【${name}】？`)) toast('删除成功'); }
+    else if(action==='停用'){ toast(`已停用：${name}`); }
+    else { toast(`${action}：${name}`); }
+  });
+});
+
+// 列表页：分页
+document.querySelectorAll('#page-list .page-btn:not(:disabled)').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ toast('切换分页'); });
+});
+
+// tab 关闭
+document.querySelectorAll('.tab-item .close').forEach(c=>{
+  c.addEventListener('click', e=>{ e.stopPropagation(); c.closest('.tab-item').remove(); });
+});
+
+// 左侧菜单折叠
+document.querySelectorAll('.menu-title').forEach(t=>{
+  t.addEventListener('click', ()=>{ t.closest('.menu-group').classList.toggle('open'); });
+});
+
+// 返回
+document.querySelector('.back-arrow').addEventListener('click', ()=>{ history.back(); });
+
+// ========== 创建页交互 ==========
+$('basicHeader').addEventListener('click', ()=>{
+  $('basicHeader').classList.toggle('collapsed');
+  $('basicBody').style.display = $('basicHeader').classList.contains('collapsed') ? 'none' : 'block';
+});
+
+$('activitySwitch').addEventListener('change', e=>{
+  $('switchLabel').textContent = e.target.checked ? '启用' : '停用';
+});
+
+document.querySelectorAll('#page-create .rule-block-header').forEach(h=>{
+  h.addEventListener('click', ()=>{
+    const block = h.closest('.rule-block');
+    block.classList.toggle('collapsed');
+  });
+});
+
+$('btnRename').addEventListener('click', ()=>{
+  const name = $('ruleSetName').value.trim();
+  if(!name) return toast('规则集名称不能为空');
+  document.querySelector('#ruleSet1 .rule-block-header span:last-child').textContent = name;
+  toast('重命名成功');
+});
+
+$('btnDelete').addEventListener('click', ()=>{
+  if(confirm('确认删除规则集1？')) {
+    $('ruleSet1').remove();
+    toast('已删除');
+  }
+});
+
+const orgTip = document.querySelector('#orgFileList').previousElementSibling;
+$('btnImportOrg').addEventListener('click', ()=>{
+  const list=$('orgFileList');
+  if(!list.querySelector('.file-tag')){
+    list.innerHTML='<span class="file-tag">参与机构清单.xlsx <span class="del">×</span></span>';
+    orgTip.textContent='已导入机构数据：';
+    toast('机构导入成功');
+  } else { toast('已存在导入文件'); }
+});
+$('orgFileList').addEventListener('click', e=>{
+  if(e.target.classList.contains('del')){
+    e.target.parentElement.remove();
+    orgTip.textContent='暂无导入机构数据，请先下载模板并按模板格式填写后导入。';
+    toast('已移除');
+  }
+});
+
+const ruleTypeSelect = $('ruleTypeSelect');
+const ruleConditionLib = $('ruleConditionLib');
+const normalRuleFields = $('normalRuleFields');
+const device2026Fields = $('device2026Fields');
+
+const ruleLibOptions = {
+  'device': [
+    {value:'', text:'请选择对应规则'},
+    {value:'d1', text:'2024年Q4云音箱活动规则'},
+    {value:'d2', text:'传统POS激活奖励规则'}
+  ],
+  'merchant': [
+    {value:'', text:'请选择对应规则'},
+    {value:'m1', text:'新商户入网奖励规则'},
+    {value:'m2', text:'商户月交易达标规则'}
+  ],
+  '2026-device': [
+    {value:'', text:'请选择对应规则'},
+    {value:'y1', text:'2026年机具按笔数奖励规则'}
+  ]
+};
+
+const updateRuleLibOptions = type => {
+  if(!ruleConditionLib) return;
+  const opts = ruleLibOptions[type] || ruleLibOptions['device'];
+  ruleConditionLib.innerHTML = opts.map(o => '<option value="'+o.value+'">'+o.text+'</option>').join('');
+};
+
+const setRuleType = type => {
+  if(ruleTypeSelect) ruleTypeSelect.value = type;
+  updateRuleLibOptions(type);
+  if(type === '2026-device'){
+    normalRuleFields.style.display = 'none';
+    device2026Fields.style.display = 'block';
+  } else if(type){
+    normalRuleFields.style.display = 'block';
+    device2026Fields.style.display = 'none';
+  } else {
+    normalRuleFields.style.display = 'none';
+    device2026Fields.style.display = 'none';
+  }
+};
+
+ruleTypeSelect.addEventListener('change', e => setRuleType(e.target.value));
+setRuleType('device');
+
+const ruleConditionLibItems = [
+  {value:'rc001', text:'月交易笔数达标'},
+  {value:'rc002', text:'累计交易笔数达标'},
+  {value:'rc003', text:'单日交易笔数达标'}
+];
+const selectRuleCondition2026 = $('selectRuleCondition2026');
+if(selectRuleCondition2026){
+  selectRuleCondition2026.innerHTML = '<option value="">请选择</option>' +
+    ruleConditionLibItems.map(o => '<option value="'+o.value+'">'+o.text+'</option>').join('');
+}
+
+const snTip = document.querySelector('#snFileList').previousElementSibling;
+$('btnImportSn').addEventListener('click', ()=>{
+  const list=$('snFileList');
+  if(!list.querySelector('.file-tag')){
+    list.innerHTML='<span class="file-tag">设备SN清单.xlsx <span class="del">×</span></span>';
+    snTip.textContent='已导入设备数据：';
+    toast('设备SN导入成功');
+  } else { toast('已存在导入文件'); }
+});
+$('snFileList').addEventListener('click', e=>{
+  if(e.target.classList.contains('del')){
+    e.target.parentElement.remove();
+    snTip.textContent='暂无导入设备数据，请先下载模板并按模板格式填写后导入。';
+    toast('已移除');
+  }
+});
+
+$('addRuleSet').addEventListener('click', e=>{
+  e.preventDefault();
+  toast('新增规则集（演示）');
+});
+
+const ladderRows = $('ladderRows');
+if(ladderRows){
+  const createLadderRow = () => {
+    const div = document.createElement('div');
+    div.className = 'ladder-row';
+    div.innerHTML = `
+      <button class="btn btn-icon btn-sm ladder-add" type="button"><svg class="icon"><use href="#icon-plus"/></svg></button>
+      <input type="text" class="form-input" placeholder="请输入">
+      <span class="ladder-label">≤机具月（卡+码）交易笔数&lt;</span>
+      <input type="text" class="form-input" placeholder="请输入">
+      <span class="ladder-label">奖励标准：机具类型</span>
+      <input type="text" class="form-input" placeholder="请输入">
+      <span class="ladder-label">台/目标单位</span>
+      <span class="ladder-label">奖励系数：</span>
+      <input type="text" class="form-input" placeholder="请输入">
+    `;
+    return div;
+  };
+  ladderRows.addEventListener('click', e=>{
+    const btn = e.target.closest('.ladder-add');
+    if(!btn) return;
+    ladderRows.appendChild(createLadderRow());
+  });
+}
+
+$('btnCancel').addEventListener('click', ()=>{ if(confirm('确认取消？')) showPage('page-list'); });
+$('btnSave').addEventListener('click', ()=>{ toast('保存成功'); setTimeout(()=>showPage('page-list'), 800); });
+  </script>
+</body>
+</html>
